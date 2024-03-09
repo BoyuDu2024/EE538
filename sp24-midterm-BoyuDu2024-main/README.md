@@ -33,3 +33,34 @@ Also note that:
 - - For example, if you get 80 from this repo and 25 from Gradescope, your total would be 105, which means you received full credit!
 
 See [cpp-template](https://github.com/ourarash/cpp-template) for help on installing bazel and debugging.
+
+Q5:
+findInsertionIndex
+Time Complexity: o(logn)
+Explanation:a binary search on a sorted vector to find the insertion index of a given value, which takes logarithmic time relative to the size of the vector.
+
+Constructor MySet(std::vector<int>& elements)
+Time Complexity: O(nlogn)
+Explanation: Sorts the input vector, which takes O(nlogn) time, and then iterates over the vector to remove duplicates, which takes O(n) time. The dominating factor is the sorting operation.
+
+Copy Constructor MySet(const MySet& rhs)
+Time Complexity: O(n)
+Explanation: Performs a shallow copy of the internal vector, which takes linear time relative to the size of the vector.
+
+insert
+Time Complexity: O(n) wrost 
+Explanation: Finds the insertion index using binary search, which is O(logn), but the insertion operation could require shifting all elements by one position in the worst case, making it O(n).
+
+is_in
+Time Complexity: 
+
+O(logn)
+Explanation: Utilizes findInsertionIndex to perform a binary search, making it logarithmic time in relation to the size of the vector.
+
+size
+Time Complexity: 
+O(1)
+Explanation: Returns the size of the internal vector, which is a constant-time operation.
+ConvertToStdVector
+Time Complexity: O(n)
+Explanation: Returns a copy of the internal vector, which requires iterating over all elements, making it linear time in relation to the size of the vector.

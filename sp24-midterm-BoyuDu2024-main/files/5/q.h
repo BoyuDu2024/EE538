@@ -56,6 +56,7 @@ class MySet {
  private:
   // Store the elements here. Keep this as a sorted vector.
   std::vector<int> elements_;
+  
 };
 
 #endif /* SOL_4_Q */
