@@ -8,25 +8,31 @@
 // TODO:
 // 1. Implement the the functions in q.h.
 // 2. Write some unit tests for them in student_test.cc
+
     MyVector::MyVector() {
         size_ = 0;
         data_ = new int[size_];
         error_ = ErrorCode::kNoError;
     }
     MyVector::MyVector(int size) {
-        size_ = size;
-        data_ = nullptr;
+        size_ = size > 0 ? size : 0; // Ensure size is non-negative
+        data_ = size_ > 0 ? new int[size_] : nullptr; // Allocate memory if size > 0
         error_ = ErrorCode::kNoError;
     }
 
     MyVector::MyVector(const MyVector& rhs) {
         size_ = rhs.size_;
-        data_ = new int[size_];
-        for (int i = 0; i < size_; ++i) {
-            data_[i] = rhs.data_[i];
+        error_ = rhs.error_;
+        if (size_ > 0 && rhs.data_ != nullptr) {
+            data_ = new int[size_];
+            for (int i = 0; i < size_; ++i) {
+                data_[i] = rhs.data_[i];
+            }
+        } else {
+            data_ = nullptr;
         }
-        error_ = ErrorCode::kNoError;
     }
+
 
     MyVector::~MyVector() {
         delete[] data_;
@@ -35,15 +41,7 @@
     }
 
    void  MyVector::push_back(int value) {
-        int* newData = new int[size_ + 1];
-        for (int i = 0; i < size_; ++i) {
-            newData[i] = data_[i];
-        }
-        newData[size_] = value;
-        ++size_;
-        delete[] data_;
-        data_ = newData;
-        error_ = ErrorCode::kNoError;
+       insert(value, size_ - 1);
     }
 
     int MyVector::pop_back() {
@@ -54,37 +52,30 @@
             return -1; // Assuming -1 is not a valid data, otherwise use a different error handling strategy
         }
         int value = data_[size_ - 1];
-        --size_;
-        int* newData = new int[size_];
-        for (int i = 0; i < size_; ++i) {
-            newData[i] = data_[i];
+        size_--;
+        if (size_ > 0) {
+            int* newData = new int[size_];
+            for (int i = 0; i < size_; ++i) {
+                newData[i] = data_[i];
+            }
+            delete[] data_;
+            data_ = newData;
+        } else {
+            delete[] data_;
+            data_ = nullptr; // Properly handle shrinking to an empty vector
         }
-        delete[] data_;
-        data_ = newData;
         error_ = ErrorCode::kNoError;
         return value;
     }
 
     void MyVector::push_front(int value) {
-        // Implementation here
-        
-        int* newData = new int[size_ + 1];
-        for (int i = 0; i < size_; ++i) {
-            newData[i + 1] = data_[i];
-        }
-        newData[0] = value;
-        ++size_;
-        delete[] data_;
-        data_ = newData;
-        error_ = ErrorCode::kNoError;
+        insert(value, -1);
     }
 
     int MyVector::pop_front() {
-        // Implementation here
-        // Remember to handle the empty vector case
         if (size_ == 0) {
             error_ = ErrorCode::kPopFromEmptyVector;
-            return -1; // Assuming -1 is not a valid data, otherwise use a different error handling strategy
+            return -1;
         }
         int value = data_[0];
         --size_;
@@ -105,19 +96,33 @@
             error_ = ErrorCode::kIndexError;
             return;
         }
+
+        // Allocate a new array one element larger than the current one.
         int* newData = new int[size_ + 1];
-        for (int i = 0, j = 0; i < size_ + 1; ++i) {
-            if (i == index + 1) {
-                newData[i] = value;
-            } else {
-                newData[i] = data_[j++];
-            }
+        
+        // Insert at the beginning if index is -1, adjust the index to use the same logic as other cases.
+        index = index == -1 ? 0 : index + 1;
+
+        // Copy elements before the insertion point.
+        for (int i = 0; i < index; ++i) {
+            newData[i] = data_[i];
         }
-        ++size_;
+
+        // Insert the new value.
+        newData[index] = value;
+
+    // Copy the elements after the insertion point.
+        for (int i = index; i < size_; ++i) {
+            newData[i + 1] = data_[i];
+        }
+
+    // Clean up the old data array and update the vector to use the new array.
         delete[] data_;
         data_ = newData;
+        size_++;
         error_ = ErrorCode::kNoError;
     }
+    
 
     int MyVector::at(int index) {
         // Implementation here
@@ -126,6 +131,7 @@
             error_ = ErrorCode::kIndexError;
             return -1;
         }
+        error_ = ErrorCode::kNoError;
         return data_[index];
     }
 
@@ -141,15 +147,18 @@
         error_ = ErrorCode::kNotFound;
         return -1;
     }
-
-   ErrorCode  MyVector::get_error() const {
+   
+   //return error kind
+    ErrorCode  MyVector::get_error() const {
         return error_;
     }
 
+    // return size
     int MyVector::size() const {
         return size_;
     }
 
+    // convert to std::vector
     std::vector<int> MyVector::ConvertToStdVector() {
         std::vector<int> vec(data_, data_ + size_);
         error_ = ErrorCode::kNoError;
